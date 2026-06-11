@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⭐ Pueblo Valeriana · Camino Real</title>
+<script src="plantas-db.js"></script>
+<style>
+:root {
+  --bg: #18140c;
+  --acento: #c8a06a;
+  --acento2: #6b4b2a;
+  --tierra: #2c1a0b;
+  --dorado: #d4a373;
+  --crema: #fef0cf;
+  --pergamino: #e8d5a8;
+  --ink: #2a1505;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body {
+  min-height:100vh;
+  background: radial-gradient(ellipse at top, color-mix(in srgb, var(--bg) 60%, black 40%), #050805 80%);
+  font-family: 'Georgia', serif;
+  color: var(--crema);
+}
+a { color: inherit; text-decoration: none; }
+
+/* ── HEADER ── */
+header {
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--acento);
+  padding: 12px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.nav-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--acento);
+  color: var(--crema);
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 0.72rem;
+  transition: background 0.2s;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.12); }
+.header-title { font-size: 1rem; letter-spacing: 1px; color: var(--acento); font-family: monospace; }
+
+/* ── LAYOUT ── */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 0;
+  min-height: calc(100vh - 56px);
+}
+@media(max-width:860px){.main{grid-template-columns:1fr;}}
+
+/* ── BOSQUE / CANVAS ── */
+.bosque-section {
+  position: relative;
+  overflow: hidden;
+  min-height: 500px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+#bosque-canvas {
+  width: 100%; height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+.bosque-overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+}
+.bosque-titulo {
+  position: absolute; top: 16px; left: 20px;
+  font-size: 1.4rem; font-weight: bold;
+  color: var(--acento);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  font-family: monospace;
+}
+.progreso-bosque {
+  position: absolute; bottom: 20px; left: 20px; right: 20px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 10px 16px;
+  border: 1px solid var(--acento);
+}
+.barra-bosque { height: 8px; background: rgba(255,255,255,0.1); border-radius: 8px; overflow:hidden; margin: 6px 0; }
+.barra-bosque-fill { height:100%; background: linear-gradient(90deg, var(--acento2), var(--acento)); border-radius:8px; transition: width 0.5s; }
+.bosque-txt { font-size: 0.68rem; font-family: monospace; color: var(--acento); display:flex; justify-content:space-between; }
+
+.semilla-btn {
+  position: absolute; bottom: 90px; right: 20px;
+  background: linear-gradient(135deg, var(--acento2), var(--acento));
+  color: #0a1208;
+  border: none;
+  border-radius: 50%;
+  width: 58px; height: 58px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  transition: transform 0.15s;
+  pointer-events: all;
+  z-index: 10;
+}
+.semilla-btn:hover { transform: scale(1.1); }
+.semilla-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Nube plantación */
+.nube-planta {
+  position: absolute;
+  pointer-events: none;
+  animation: flotar 1.5s ease-out forwards;
+  font-size: 1rem;
+  font-family: monospace;
+  color: var(--acento);
+  z-index: 20;
+}
+@keyframes flotar { 0%{opacity:1;transform:translateY(0);} 100%{opacity:0;transform:translateY(-40px);} }
+
+/* Mensaje completado */
+.completado-banner {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.85);
+  border: 2px solid var(--acento);
+  border-radius: 24px;
+  padding: 24px 32px;
+  text-align: center;
+  z-index: 30;
+  display: none;
+  backdrop-filter: blur(10px);
+}
+.completado-banner.visible { display: block; animation: aparecer 0.5s ease; }
+@keyframes aparecer { from{opacity:0;transform:translate(-50%,-48%)scale(0.9);} to{opacity:1;transform:translate(-50%,-50%)scale(1);} }
+
+/* ── PANEL DERECHO ── */
+.info-section {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(100vh - 56px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--acento) #0a0804;
+}
+
+/* Pomodoro */
+.pomodoro-card {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--acento);
+  border-radius: 20px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.timer-big { font-size: 2.8rem; font-family: 'Courier New', monospace; font-weight: bold; color: var(--acento); letter-spacing: 6px; }
+.timer-lbl { font-size: 0.65rem; color: #9a8060; font-family: monospace; margin-top: 4px; }
+.btn-pom {
+  width: 100%; margin-top: 12px;
+  background: color-mix(in srgb, var(--acento2) 80%, black 20%);
+  color: var(--crema);
+  border: none; border-radius: 30px;
+  padding: 10px; cursor: pointer;
+  font-family: monospace; font-size: 0.78rem; font-weight: bold;
+  letter-spacing: 1px; transition: background 0.2s;
+}
+.btn-pom:hover { filter: brightness(1.2); }
+.btn-pom.activo { background: #1a5a3a; }
+
+/* Stats */
+.stats-mini { display:flex; gap:8px; margin-bottom:16px; }
+.stat-box {
+  flex:1; background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; padding: 10px 6px; text-align:center;
+}
+.stat-v { font-size: 1.4rem; font-weight: bold; color: var(--acento); font-family: monospace; }
+.stat-l { font-size: 0.55rem; color: #7a6040; }
+
+/* Carta de planta */
+.carta-planta {
+  background: linear-gradient(145deg, rgba(0,0,0,0.5), rgba(30,20,10,0.6));
+  border: 2px solid var(--acento);
+  border-radius: 22px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.carta-emoji { font-size: 3.5rem; text-align:center; margin-bottom: 8px; }
+.carta-nombre { font-size: 1.2rem; font-weight: bold; color: var(--acento); text-align:center; font-family: monospace; }
+.carta-familia { font-size: 0.62rem; color: #8a7050; text-align:center; margin-bottom: 12px; font-style: italic; }
+.carta-seccion { font-size: 0.62rem; color: #8a7050; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 4px; }
+.tag {
+  display: inline-block;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--acento2);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.6rem;
+  color: var(--acento);
+  margin: 2px;
+  font-family: monospace;
+}
+.carta-texto { font-size: 0.68rem; color: #d4c0a0; line-height: 1.6; }
+.uso-item { display:flex; gap:6px; align-items:flex-start; margin: 4px 0; }
+.uso-item::before { content:"•"; color: var(--acento); flex-shrink:0; }
+.contra { background: rgba(100,20,20,0.25); border-radius: 12px; padding: 8px 12px; font-size: 0.63rem; color: #f5a5a5; border-left: 3px solid #8b3333; margin-top: 8px; }
+.prep { background: rgba(var(--acento2), 0.1); border-radius: 12px; padding: 8px 12px; font-size: 0.65rem; color: #d4c0a0; border-left: 3px solid var(--acento2); margin-top: 8px; }
+
+/* Variantes */
+.variantes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+.variante-card {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 8px;
+  text-align: center;
+  font-size: 0.62rem;
+  cursor: default;
+  transition: border-color 0.2s;
+}
+.variante-card.raro { border-color: #ffd70060; }
+.variante-card .v-emoji { font-size: 1.4rem; }
+
+/* Hongos / Frutas bonus */
+.bonus-section { margin-top: 14px; }
+.bonus-item {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin: 5px 0;
+  font-size: 0.65rem;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Plantas en mi bosque */
+.mis-plantas {
+  background: rgba(0,0,0,0.3);
+  border-radius: 16px;
+  padding: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 14px;
+  border: 1px solid rgba(255,255,255,0.05);
+  scrollbar-width: thin;
+  scrollbar-color: var(--acento2) transparent;
+}
+.planta-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.62rem;
+  color: #c8b090;
+}
+.planta-row:last-child { border-bottom: none; }
+
+/* Notif */
+.notif {
+  position: fixed; bottom:20px; right:20px;
+  background: rgba(30,18,8,0.95);
+  border: 1px solid var(--acento);
+  color: var(--crema);
+  padding: 8px 18px;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-family: monospace;
+  z-index: 200;
+  animation: slideIn 0.3s ease, fadeOut3 2.5s 0.3s forwards;
+}
+@keyframes slideIn { from{transform:translateX(40px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+@keyframes fadeOut3 { to{opacity:0;transform:translateX(30px);} }
+
+/* CTA Siguiente Pueblo */
+.siguiente-pueblo {
+  background: linear-gradient(135deg, var(--acento2), var(--acento));
+  color: #0a1208;
+  border: none;
+  border-radius: 24px;
+  padding: 14px 24px;
+  width: 100%;
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 16px;
+  letter-spacing: 1px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: none;
+}
+.siguiente-pueblo:hover { transform: scale(1.02); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+.siguiente-pueblo.visible { display: block; animation: aparecer2 0.5s ease; }
+@keyframes aparecer2 { from{opacity:0;transform:scale(0.95);} to{opacity:1;transform:scale(1);} }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="nav-btn" onclick="window.location.href='pueblo5.html'">← Volver</button>
+  <span class="header-title">⭐ PUEBLO VALERIANA</span>
+  <button class="nav-btn" onclick="window.location.href='index.html'">🗺️ Mapa</button>
+</header>
+
+<div class="main">
+
+  <!-- ── BOSQUE ── -->
+  <div class="bosque-section">
+    <canvas id="bosque-canvas"></canvas>
+    <div class="bosque-overlay">
+      <div class="bosque-titulo">⭐ Bosque del pueblo</div>
+      <div class="progreso-bosque">
+        <div class="bosque-txt">
+          <span>🌱 Plantas: <span id="plantas-count">0</span> / <span id="plantas-total">?</span></span>
+          <span id="bosque-estado">Planta semillas para completar el bosque</span>
+        </div>
+        <div class="barra-bosque"><div class="barra-bosque-fill" id="barra-bosque-fill" style="width:0%"></div></div>
+      </div>
+      <button class="semilla-btn" id="semilla-btn" title="Plantar semilla">🌱</button>
+      <div class="completado-banner" id="completado-banner">
+        <div style="font-size:2.5rem">⭐</div>
+        <h2 style="color:var(--acento);font-family:monospace;margin:8px 0">¡Bosque Completado!</h2>
+        <p style="font-size:0.75rem;color:#c8b090;">Has aprendido sobre <strong id="planta-aprendida-nombre">esta planta</strong></p>
+        <button class="siguiente-pueblo visible" id="btn-siguiente" onclick="irSiguiente()">
+          Ir al siguiente pueblo →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANEL INFO ── -->
+  <div class="info-section">
+
+    <!-- Pomodoro -->
+    <div class="pomodoro-card">
+      <div class="timer-big" id="timer-num">25:00</div>
+      <div class="timer-lbl" id="timer-lbl">⚔️ Modo Estudio · Completa un pomodoro = +1 🌱</div>
+      <button class="btn-pom" id="btn-pom">▶ INICIAR POMODORO</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-mini">
+      <div class="stat-box"><div class="stat-v" id="st-semillas">0</div><div class="stat-l">🌱 Semillas</div></div>
+      <div class="stat-box"><div class="stat-v" id="st-pomodoros">0</div><div class="stat-l">⏱️ Pomodoros</div></div>
+      <div class="stat-box"><div class="stat-v" id="st-bosque">0</div><div class="stat-l">🌳 En Bosque</div></div>
+    </div>
+
+    <!-- Carta Planta -->
+    <div class="carta-planta" id="carta-planta">
+      <!-- Se llena con JS -->
+    </div>
+
+    <!-- Mis plantas en este bosque -->
+    <div style="font-size:0.62rem;color:#8a7050;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🌳 MI BOSQUE</div>
+    <div class="mis-plantas" id="mis-plantas">
+      <div style="text-align:center;padding:14px;color:#6a5040;font-size:0.65rem;">Planta semillas para poblar este bosque</div>
+    </div>
+
+    <button class="siguiente-pueblo" id="btn-siguiente-bottom" onclick="irSiguiente()">
+      Ir al siguiente pueblo →
+    </button>
+
+  </div>
+</div>
+
+<script>
+// ─── CONSTANTES DE PUEBLO ─────────────────────────────────────────────────
+const PUEBLO_ID = 5;
+const PLANTA_ID = "valeriana";
+const NEXT_FILE = "pueblo7.html";
+const NEXT_ID   = 6;
+const IS_LAST   = false;
+
+// ─── ESTADO ──────────────────────────────────────────────────────────────
+let estado = cargarEstado();
+let timerInterval = null;
+const plantaDB = PLANTAS_DB.find(p => p.id === PLANTA_ID);
+const semillasNecesarias = plantaDB?.semillas_necesarias ?? 10;
+
+// ─── CARTA PLANTA ────────────────────────────────────────────────────────
+function renderCarta() {
+  const c = document.getElementById("carta-planta");
+  const bonusHongos = HONGOS_DB.slice(0, 2);
+  const bonusFrutas = FRUTAS_DB.slice(0, 2);
+
+  c.innerHTML = `
+    <div class="carta-emoji">${plantaDB.emoji}</div>
+    <div class="carta-nombre">${plantaDB.nombre}</div>
+    <div class="carta-familia">${plantaDB.familia} · ${plantaDB.origen}</div>
+
+    <div class="carta-seccion">PROPIEDADES</div>
+    <div>${plantaDB.propiedades.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+
+    <div class="carta-seccion">PARTES USADAS</div>
+    <p class="carta-texto">${plantaDB.partes}</p>
+
+    <div class="carta-seccion">USOS MEDICINALES</div>
+    ${plantaDB.usos.map(u => `<div class="uso-item carta-texto">${u}</div>`).join("")}
+
+    <div class="carta-seccion">PREPARACIÓN</div>
+    <div class="prep carta-texto">🍵 ${plantaDB.preparacion}</div>
+
+    <div class="carta-seccion">CONTRAINDICACIONES</div>
+    <div class="contra">⚠️ ${plantaDB.contraindicaciones}</div>
+
+    <div class="carta-seccion">VARIEDADES</div>
+    <div class="variantes-grid">
+      ${plantaDB.variantes.map(v => `
+        <div class="variante-card ${v.raro ? "raro" : ""}">
+          <div class="v-emoji">${v.emoji}</div>
+          <div>${v.nombre}</div>
+          ${v.raro ? '<div style="font-size:0.5rem;color:#ffd700">✨ Rara</div>' : ""}
+        </div>
+      `).join("")}
+    </div>
+
+    <div class="carta-seccion">BONUS: HONGOS MEDICINALES</div>
+    ${bonusHongos.map(h => `
+      <div class="bonus-item">
+        <span style="font-size:1.4rem">${h.emoji}</span>
+        <div><strong>${h.nombre}</strong><br><span style="color:#8a7050">${h.propiedades.join(" · ")}</span></div>
+      </div>
+    `).join("")}
+
+    <div class="carta-seccion">BONUS: FRUTAS MEDICINALES</div>
+    ${bonusFrutas.map(f => `
+      <div class="bonus-item">
+        <span style="font-size:1.4rem">${f.emoji}</span>
+        <div><strong>${f.nombre}</strong><br><span style="color:#8a7050">${f.propiedades.join(" · ")}</span></div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ─── BOSQUE CANVAS ────────────────────────────────────────────────────────
+const canvas = document.getElementById("bosque-canvas");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  dibujarBosque();
+}
+window.addEventListener("resize", resizeCanvas);
+
+const FLORA = [
+  { emoji:"🌳", label:"Árbol" }, { emoji:"🌲", label:"Pino" }, { emoji:"🌿", label:"Hierba" },
+  { emoji:"🍃", label:"Hoja" }, { emoji:"🌸", label:"Flor" }, { emoji:"🌼", label:"Margarita" },
+  { emoji:"🍀", label:"Trébol" }, { emoji:"🌻", label:"Girasol" }, { emoji:"🌾", label:"Espiga" },
+  { emoji:"⭐", label:"Especial" }, { emoji:"🍄", label:"Hongo" }, { emoji:"🫐", label:"Baya" }
+];
+
+// Flora específica según planta del pueblo
+const FLORA_PUEBLO = {
+  manzanilla: ["🌼","🌼","🌿","🌸","🌾","🌳"],
+  menta:      ["🌿","🍃","🌿","🌲","🌳","🌱"],
+  romero:     ["🍃","🌲","🌿","🌳","🌾","⭐"],
+  lavanda:    ["🌸","💜","🌸","🌿","🌸","🌷"],
+  albahaca:   ["🌱","🌿","🍃","🌳","🌻","🌱"],
+  valeriana:  ["⭐","🌾","🌿","🌸","🍀","🌼"],
+  ginkgo:     ["🍀","🌳","🍃","🌲","✨","🍀"],
+  hipericum:  ["🌻","☀️","🌻","🌿","🌸","⭐"]
+};
+const floraEmojis = FLORA_PUEBLO[PLANTA_ID] || ["🌿","🌸","🌳","🍃","🌼","🌾"];
+
+function dibujarBosque() {
+  if (!ctx) return;
+  const W = canvas.width, H = canvas.height;
+  // Fondo degradado
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, "rgba(15,25,15,1)");
+  grad.addColorStop(1, "rgba(8,16,8,1)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Suelo
+  const suelo = ctx.createLinearGradient(0, H*0.7, 0, H);
+  suelo.addColorStop(0, "rgba(30,18,8,0.6)");
+  suelo.addColorStop(1, "rgba(20,12,4,0.8)");
+  ctx.fillStyle = suelo;
+  ctx.beginPath();
+  ctx.ellipse(W/2, H, W*0.6, H*0.22, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Estrellas de fondo
+  ctx.fillStyle = "rgba(255,255,255,0.4)";
+  for (let i = 0; i < 40; i++) {
+    const sx = (i * 137.5) % W;
+    const sy = (i * 91.3) % (H * 0.6);
+    const sr = 0.5 + (i % 3) * 0.4;
+    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Plantas plantadas
+  const plantasAqui = estado.plantasPorPueblo[String(PUEBLO_ID)] || [];
+  plantasAqui.forEach(p => {
+    ctx.font = `${p.size || 26}px serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.fillText(p.emoji, p.x, p.y);
+    ctx.shadowBlur = 0;
+  });
+
+  // Mensaje de inicio si no hay plantas
+  if (plantasAqui.length === 0) {
+    ctx.fillStyle = "rgba(212,163,115,0.4)";
+    ctx.font = "14px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("Haz clic en el bosque para plantar 🌱", W/2, H/2);
+    ctx.fillText("(Necesitas semillas del Pomodoro)", W/2, H/2 + 22);
+  }
+}
+
+// Click en canvas = plantar
+canvas.addEventListener("click", ev => {
+  estado = cargarEstado();
+  if (estado.semillas <= 0) { notif("❌ Sin semillas. Completa un pomodoro primero."); return; }
+  const rect = canvas.getBoundingClientRect();
+  const x = ev.clientX - rect.left;
+  const y = ev.clientY - rect.top;
+
+  const emojiIdx = Math.floor(Math.random() * floraEmojis.length);
+  const emoji = floraEmojis[emojiIdx];
+  const size = 20 + Math.random() * 18;
+
+  const plantas = estado.plantasPorPueblo[String(PUEBLO_ID)] || [];
+  plantas.push({ x, y, emoji, size, ts: Date.now(), variante: emojiIdx });
+  estado.plantasPorPueblo[String(PUEBLO_ID)] = plantas;
+  estado.semillas--;
+  guardarEstado(estado);
+  actualizarUI();
+  dibujarBosque();
+
+  // Nube flotante
+  const nube = document.createElement("div");
+  nube.className = "nube-planta";
+  nube.textContent = `+${emoji}`;
+  nube.style.left = (ev.clientX - 10) + "px";
+  nube.style.top = (ev.clientY - 20) + "px";
+  document.body.appendChild(nube);
+  setTimeout(() => nube.remove(), 1600);
+
+  notif(`🌱 ¡Plantado! Semillas restantes: ${estado.semillas}`);
+});
+
+// ─── PROGRESO BOSQUE ─────────────────────────────────────────────────────
+function actualizarUI() {
+  estado = cargarEstado();
+  const plantasAqui = (estado.plantasPorPueblo[String(PUEBLO_ID)] || []).length;
+  const pct = Math.min(100, (plantasAqui / semillasNecesarias) * 100);
+
+  document.getElementById("plantas-count").textContent = plantasAqui;
+  document.getElementById("plantas-total").textContent = semillasNecesarias;
+  document.getElementById("barra-bosque-fill").style.width = pct + "%";
+  document.getElementById("bosque-estado").textContent = plantasAqui >= semillasNecesarias ? "✅ ¡Bosque completado!" : `Planta ${semillasNecesarias - plantasAqui} más`;
+
+  document.getElementById("st-semillas").textContent = estado.semillas;
+  document.getElementById("st-pomodoros").textContent = estado.pomodorosCompletados;
+  document.getElementById("st-bosque").textContent = plantasAqui;
+
+  // Deshabilitar botón semilla
+  document.getElementById("semilla-btn").disabled = estado.semillas <= 0;
+
+  // Mis plantas lista
+  const mpl = document.getElementById("mis-plantas");
+  if (plantasAqui === 0) {
+    mpl.innerHTML = '<div style="text-align:center;padding:14px;color:#6a5040;font-size:0.65rem;">Planta semillas para poblar este bosque</div>';
+  } else {
+    const plantasList = estado.plantasPorPueblo[String(PUEBLO_ID)] || [];
+    mpl.innerHTML = plantasList.slice().reverse().map((p,i) => `
+      <div class="planta-row">
+        <span style="font-size:1.2rem">${p.emoji}</span>
+        <span>Planta #${plantasList.length - i}</span>
+        <span style="margin-left:auto;color:#6a5040">${new Date(p.ts).toLocaleTimeString()}</span>
+      </div>
+    `).join("");
+  }
+
+  // ¿Bosque completo?
+  if (plantasAqui >= semillasNecesarias) {
+    marcarCompletado();
+  }
+}
+
+function marcarCompletado() {
+  estado = cargarEstado();
+  if (!estado.pueblosCompletados.includes(PUEBLO_ID)) {
+    estado.pueblosCompletados.push(PUEBLO_ID);
+    // Desbloquear siguiente
+    if (!estado.pueblosDesbloqueados.includes(NEXT_ID)) {
+      estado.pueblosDesbloqueados.push(NEXT_ID);
+    }
+    if (!estado.plantasAprendidas.includes(PLANTA_ID)) {
+      estado.plantasAprendidas.push(PLANTA_ID);
+    }
+    guardarEstado(estado);
+  }
+
+  document.getElementById("planta-aprendida-nombre").textContent = plantaDB?.nombre || PLANTA_ID;
+  document.getElementById("completado-banner").classList.add("visible");
+  document.getElementById("btn-siguiente-bottom").classList.add("visible");
+}
+
+function irSiguiente() {
+  window.location.href = NEXT_FILE;
+}
+
+// ─── POMODORO ─────────────────────────────────────────────────────────────
+function fmtTime(s) { return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`; }
+function actualizarTimerUI() {
+  estado = cargarEstado();
+  document.getElementById("timer-num").textContent = fmtTime(estado.timerRestante);
+  const es = estado.timerModo === "estudio";
+  document.getElementById("timer-lbl").textContent = es ? "⚔️ Modo Estudio · Completa un pomodoro = +1 🌱" : "🛡️ Descanso · 5 min";
+  const btn = document.getElementById("btn-pom");
+  btn.textContent = estado.timerActivo ? "⏸ PAUSAR" : "▶ INICIAR POMODORO";
+  btn.className = "btn-pom" + (estado.timerActivo ? " activo" : "");
+}
+
+document.getElementById("btn-pom").onclick = () => {
+  estado = cargarEstado();
+  estado.timerActivo = !estado.timerActivo;
+  guardarEstado(estado);
+  actualizarTimerUI();
+  if (estado.timerActivo) arrancarTimer();
+  else clearInterval(timerInterval);
+};
+
+function arrancarTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    estado = cargarEstado();
+    if (!estado.timerActivo) return;
+    estado.timerRestante--;
+    if (estado.timerRestante <= 0) {
+      if (estado.timerModo === "estudio") {
+        estado.semillas++;
+        estado.pomodorosCompletados++;
+        estado.timerModo = "descanso";
+        estado.timerRestante = 5 * 60;
+        notif("✅ ¡Pomodoro completado! +1 🌱 Semilla ganada");
+      } else {
+        estado.timerModo = "estudio";
+        estado.timerRestante = 25 * 60;
+        notif("⚔️ Descanso terminado. ¡A estudiar!");
+      }
+      estado.timerActivo = false;
+      clearInterval(timerInterval);
+    }
+    guardarEstado(estado);
+    actualizarTimerUI();
+    actualizarUI();
+    dibujarBosque();
+  }, 1000);
+}
+
+if (estado.timerActivo) arrancarTimer();
+
+// ─── NOTIF ────────────────────────────────────────────────────────────────
+function notif(txt) {
+  const d = document.createElement("div");
+  d.className = "notif"; d.textContent = txt;
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 3200);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+renderCarta();
+resizeCanvas();
+actualizarTimerUI();
+actualizarUI();
+</script>
+</body>
+</html>

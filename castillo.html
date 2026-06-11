@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👑 Castillo Real · Camino Real</title>
+<script src="plantas-db.js"></script>
+<style>
+:root{--bg:#1a0e04;--acento:#ffd700;--acento2:#c8860a;--crema:#fef0cf;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#2a1a04,#050302 80%);font-family:'Georgia',serif;color:var(--crema);}
+header{background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);border-bottom:2px solid var(--acento);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.nav-btn{background:rgba(255,255,255,0.06);border:1px solid var(--acento);color:var(--crema);padding:6px 14px;border-radius:20px;cursor:pointer;font-family:monospace;font-size:0.72rem;}
+.nav-btn:hover{background:rgba(255,255,255,0.12);}
+.main{max-width:900px;margin:0 auto;padding:30px 20px;}
+.hero{text-align:center;padding:40px 20px;}
+.hero-emoji{font-size:5rem;filter:drop-shadow(0 0 30px gold);}
+.hero h1{font-size:2rem;color:var(--acento);letter-spacing:3px;margin:16px 0;font-family:monospace;}
+.hero p{font-size:0.85rem;color:#c8a070;max-width:500px;margin:0 auto;line-height:1.7;}
+.titulo-sec{font-size:0.65rem;color:#8a7050;text-transform:uppercase;letter-spacing:2px;margin:24px 0 12px;}
+.enciclopedia{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+.planta-card{background:rgba(0,0,0,0.4);border:1px solid rgba(212,163,115,0.3);border-radius:20px;padding:16px;transition:border-color 0.2s,transform 0.15s;cursor:default;}
+.planta-card:hover{border-color:var(--acento);transform:translateY(-2px);}
+.planta-card.aprendida{border-color:rgba(82,214,138,0.5);background:rgba(20,60,30,0.3);}
+.planta-card .pc-emoji{font-size:2.5rem;text-align:center;margin-bottom:8px;}
+.planta-card .pc-nombre{font-size:0.85rem;font-weight:bold;color:var(--acento);text-align:center;font-family:monospace;}
+.planta-card .pc-prop{font-size:0.6rem;color:#9a7050;text-align:center;margin:6px 0;}
+.planta-card .pc-tags div{display:inline-block;background:rgba(255,255,255,0.06);border:1px solid rgba(212,163,115,0.3);border-radius:20px;padding:1px 8px;font-size:0.55rem;color:#c8a070;margin:2px;}
+.bloqueada{opacity:0.35;filter:grayscale(0.7);}
+.stats-finales{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0;}
+.sf{background:rgba(0,0,0,0.4);border:1px solid rgba(212,163,115,0.3);border-radius:16px;padding:14px;text-align:center;}
+.sf-v{font-size:1.8rem;font-weight:bold;color:var(--acento);font-family:monospace;}
+.sf-l{font-size:0.6rem;color:#8a7050;}
+.pomodoro-card{background:rgba(0,0,0,0.4);border:2px solid var(--acento);border-radius:20px;padding:16px;text-align:center;margin-bottom:20px;}
+.timer-big{font-size:2.8rem;font-family:'Courier New',monospace;font-weight:bold;color:var(--acento);letter-spacing:6px;}
+.btn-pom{width:100%;margin-top:10px;background:var(--acento2);color:var(--crema);border:none;border-radius:30px;padding:10px;cursor:pointer;font-family:monospace;font-size:0.78rem;font-weight:bold;transition:background 0.2s;}
+.btn-pom:hover{background:#e0a020;}
+.btn-pom.activo{background:#1a5a3a;}
+.notif{position:fixed;bottom:20px;right:20px;background:rgba(30,18,8,0.95);border:1px solid var(--acento);color:var(--crema);padding:8px 18px;border-radius:30px;font-size:0.75rem;font-family:monospace;z-index:200;animation:sIn 0.3s ease,fO 2.5s 0.3s forwards;}
+@keyframes sIn{from{transform:translateX(40px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes fO{to{opacity:0;transform:translateX(30px);}}
+</style>
+</head>
+<body>
+<header>
+  <button class="nav-btn" onclick="window.location.href='pueblo7.html'">← Pueblo 7</button>
+  <span style="color:var(--acento);font-family:monospace;font-size:0.9rem;letter-spacing:2px;">👑 CASTILLO REAL</span>
+  <button class="nav-btn" onclick="window.location.href='index.html'">🗺️ Mapa</button>
+</header>
+<div class="main">
+  <div class="hero">
+    <div class="hero-emoji">👑</div>
+    <h1>CASTILLO REAL</h1>
+    <p>Bienvenido al sanctum del conocimiento herbal. Aquí reside la sabiduría de todos los pueblos del camino. Cada planta que aprendiste te trajo hasta aquí.</p>
+  </div>
+
+  <div class="pomodoro-card">
+    <div class="timer-big" id="timer-num">25:00</div>
+    <div style="font-size:0.65rem;color:#9a8060;font-family:monospace;margin-top:4px;" id="timer-lbl">⚔️ Modo Estudio · 25 min</div>
+    <button class="btn-pom" id="btn-pom">▶ INICIAR POMODORO</button>
+  </div>
+
+  <div class="stats-finales" id="stats-finales">
+    <div class="sf"><div class="sf-v" id="sf-semillas">0</div><div class="sf-l">🌱 Semillas</div></div>
+    <div class="sf"><div class="sf-v" id="sf-pomodoros">0</div><div class="sf-l">⏱️ Pomodoros</div></div>
+    <div class="sf"><div class="sf-v" id="sf-plantas">0</div><div class="sf-l">🌿 Plantas Aprendidas</div></div>
+    <div class="sf"><div class="sf-v" id="sf-pueblos">0</div><div class="sf-l">🏘️ Pueblos Completados</div></div>
+  </div>
+
+  <div class="titulo-sec">📚 ENCICLOPEDIA DE PLANTAS MEDICINALES</div>
+  <div class="enciclopedia" id="enciclopedia"></div>
+</div>
+
+<script>
+let estado = cargarEstado();
+let timerInterval = null;
+
+function renderEnciclopedia() {
+  const enc = document.getElementById("enciclopedia");
+  enc.innerHTML = PLANTAS_DB.map(p => {
+    const aprendida = estado.plantasAprendidas.includes(p.id);
+    return `<div class="planta-card ${aprendida ? "aprendida" : "bloqueada"}">
+      <div class="pc-emoji">${p.emoji}</div>
+      <div class="pc-nombre">${p.nombre}</div>
+      <div class="pc-prop">${p.familia}${aprendida ? "" : " · 🔒 Visita el pueblo para aprender"}</div>
+      ${aprendida ? `<div class="pc-tags">${p.propiedades.map(t => `<div>${t}</div>`).join("")}</div>
+        <div style="font-size:0.6rem;color:#52d68a;margin-top:8px;text-align:center">✅ Aprendida</div>
+      ` : ""}
+    </div>`;
+  }).join("");
+}
+
+function actualizarStats() {
+  estado = cargarEstado();
+  document.getElementById("sf-semillas").textContent = estado.semillas;
+  document.getElementById("sf-pomodoros").textContent = estado.pomodorosCompletados;
+  document.getElementById("sf-plantas").textContent = estado.plantasAprendidas.length;
+  document.getElementById("sf-pueblos").textContent = estado.pueblosCompletados.length;
+}
+
+function fmtTime(s){return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;}
+function actualizarTimerUI(){
+  estado=cargarEstado();
+  document.getElementById("timer-num").textContent=fmtTime(estado.timerRestante);
+  const es=estado.timerModo==="estudio";
+  document.getElementById("timer-lbl").textContent=es?"⚔️ Modo Estudio · 25 min":"🛡️ Descanso · 5 min";
+  const btn=document.getElementById("btn-pom");
+  btn.textContent=estado.timerActivo?"⏸ PAUSAR":"▶ INICIAR POMODORO";
+  btn.className="btn-pom"+(estado.timerActivo?" activo":"");
+}
+document.getElementById("btn-pom").onclick=()=>{
+  estado=cargarEstado();estado.timerActivo=!estado.timerActivo;guardarEstado(estado);actualizarTimerUI();
+  if(estado.timerActivo)arrancarTimer(); else clearInterval(timerInterval);
+};
+function arrancarTimer(){
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    estado=cargarEstado();if(!estado.timerActivo)return;
+    estado.timerRestante--;
+    if(estado.timerRestante<=0){
+      if(estado.timerModo==="estudio"){estado.semillas++;estado.pomodorosCompletados++;estado.timerModo="descanso";estado.timerRestante=5*60;notif("✅ ¡Pomodoro! +1 🌱");}
+      else{estado.timerModo="estudio";estado.timerRestante=25*60;notif("⚔️ ¡A estudiar!");}
+      estado.timerActivo=false;clearInterval(timerInterval);
+    }
+    guardarEstado(estado);actualizarTimerUI();actualizarStats();
+  },1000);
+}
+if(estado.timerActivo)arrancarTimer();
+
+function notif(txt){const d=document.createElement("div");d.className="notif";d.textContent=txt;document.body.appendChild(d);setTimeout(()=>d.remove(),3200);}
+
+renderEnciclopedia();
+actualizarStats();
+actualizarTimerUI();
+</script>
+</body>
+</html>
